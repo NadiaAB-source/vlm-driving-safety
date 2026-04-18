@@ -1,27 +1,33 @@
 # vlm-driving-safety
 Safety-aware post-processing framework for Vision-Language Models in autonomous driving using rule-based constraints and consistency voting.
 
+# Safety-Aware Post-Processing for Reliable VLM Driving Decisions
+
+## Project Description
+
+This project improves the safety and reliability of Vision–Language Models (VLMs) for autonomous driving without retraining.
+
+Modern VLMs can analyze driving scenes and generate decisions such as *keep speed* or *brake*. However, they may produce unsafe outputs (e.g., accelerating at a red light).
+
+We propose a **post-processing safety layer** that operates on top of a pretrained model and:
+- Converts outputs into structured actions
+- Applies deterministic safety rules
+- Uses multi-query consistency voting
+
+This method is:
+- Model-agnostic  
+- Explainable  
+- Does not require retraining  
+
 ---
 
-#  You are DONE with code requirements 🎉
+## Software Requirements
 
-## What you now have:
-✔ Modular code  
-✔ Runnable system  
-✔ requirements.txt  
-✔ README (full marks level)  
-✔ Dummy + Full modes  
+- Python 3.10+
+- PyTorch
+- HuggingFace Transformers
 
----
+Install dependencies using:
 
-#  FINAL STEP
-
-👉 Upload to GitHub  
-👉 Zip the `project/` folder  
-👉 Submit  
-
----
-
-If you want, I can quickly:
-- review your final ZIP  
-- or help you write commit messages (for grading boost 🔥)
+```bash
+pip install -r requirements.txt
