@@ -1,33 +1,37 @@
 # Safety-Aware Post-Processing for Reliable VLM Driving Decisions
-This project presents a safety-aware post-processing framework designed to improve the reliability of Vision–Language Models (VLMs) in autonomous driving scenarios.
 
-Instead of modifying or retraining the model, we introduce a lightweight, model-agnostic layer that:
-- Extracts structured scene context
-- Applies deterministic safety rules to filter unsafe actions
-- Uses multi-query consistency voting to stabilize predictions
-
-The system significantly reduces unsafe decisions while maintaining or improving overall accuracy, making it suitable for safety-critical applications.
-
-Key features:
-- No model retraining required
-- Fully explainable rule-based decisions
-- Works with any Vision–Language Model
-- Supports both lightweight (dummy) and full dataset execution modes
 ## Project Description
 
-This project improves the safety and reliability of Vision–Language Models (VLMs) for autonomous driving without retraining.
+This project presents a **safety-aware post-processing framework** designed to improve the reliability of Vision–Language Models (VLMs) in autonomous driving scenarios.
 
-Modern VLMs can analyze driving scenes and generate decisions such as *keep speed* or *brake*. However, they may produce unsafe outputs (e.g., accelerating at a red light).
+Modern VLMs can analyze driving scenes and generate high-level decisions such as *keep speed* or *brake gently*. However, these models are inherently stochastic and may produce unsafe outputs (e.g., accelerating at a red light).
 
-We propose a **post-processing safety layer** that operates on top of a pretrained model and:
-- Converts outputs into structured actions
-- Applies deterministic safety rules
-- Uses multi-query consistency voting
+To address this, we introduce a **lightweight, model-agnostic safety layer** that operates on top of a pretrained VLM without retraining.
 
-This method is:
-- Model-agnostic  
-- Explainable  
-- Does not require retraining  
+The framework:
+- Extracts structured scene context from images
+- Applies deterministic safety rules to enforce traffic constraints
+- Uses multi-query consistency voting to stabilize predictions
+
+This approach significantly reduces unsafe decisions while improving overall accuracy.
+
+---
+
+## Key Features
+
+- No model retraining required  
+- Model-agnostic (works with any VLM)  
+- Fully explainable rule-based decisions  
+- Multi-query consistency for stability  
+- Supports both lightweight testing and full dataset evaluation  
+
+---
+
+## Hardware Requirements
+
+- GPU recommended: NVIDIA A100 / RTX 3090 (16GB+ VRAM)
+- Minimum: GPU with 12GB VRAM
+- CPU-only execution is possible but extremely slow
 
 ---
 
@@ -36,8 +40,14 @@ This method is:
 - Python 3.10+
 - PyTorch
 - HuggingFace Transformers
+- Datasets library
 
-Install dependencies using:
+---
+
+## Installation
 
 ```bash
+git clone https://github.com/NadiaAB-source/vlm-driving-safety.git
+cd vlm-driving-safety
+
 pip install -r requirements.txt
