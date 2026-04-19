@@ -1,5 +1,18 @@
 # Safety-Aware Post-Processing for Reliable VLM Driving Decisions
+This project presents a safety-aware post-processing framework designed to improve the reliability of Vision–Language Models (VLMs) in autonomous driving scenarios.
 
+Instead of modifying or retraining the model, we introduce a lightweight, model-agnostic layer that:
+- Extracts structured scene context
+- Applies deterministic safety rules to filter unsafe actions
+- Uses multi-query consistency voting to stabilize predictions
+
+The system significantly reduces unsafe decisions while maintaining or improving overall accuracy, making it suitable for safety-critical applications.
+
+Key features:
+- No model retraining required
+- Fully explainable rule-based decisions
+- Works with any Vision–Language Model
+- Supports both lightweight (dummy) and full dataset execution modes
 ## Project Description
 
 This project improves the safety and reliability of Vision–Language Models (VLMs) for autonomous driving without retraining.
