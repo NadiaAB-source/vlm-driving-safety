@@ -1,9 +1,6 @@
-# vlm-driving-safety
-Safety-aware post-processing framework for Vision-Language Models in autonomous driving using rule-based constraints and consistency voting.
-
 # Safety-Aware Post-Processing for Reliable VLM Driving Decisions
 
-## Project Description
+## 📌 Project Description
 
 This project improves the safety and reliability of Vision–Language Models (VLMs) for autonomous driving without retraining.
 
@@ -21,7 +18,7 @@ This method is:
 
 ---
 
-## Software Requirements
+## ⚙️ Software Requirements
 
 - Python 3.10+
 - PyTorch
