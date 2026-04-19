@@ -1,6 +1,6 @@
 # Safety-Aware Post-Processing for Reliable VLM Driving Decisions
 
-## 📌 Project Description
+## Project Description
 
 This project improves the safety and reliability of Vision–Language Models (VLMs) for autonomous driving without retraining.
 
