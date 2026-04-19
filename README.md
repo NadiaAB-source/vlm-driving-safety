@@ -31,7 +31,7 @@ This method is:
 
 ---
 
-## ⚙️ Software Requirements
+## Software Requirements
 
 - Python 3.10+
 - PyTorch
