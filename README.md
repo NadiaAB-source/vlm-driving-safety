@@ -14,6 +14,15 @@ To address this, we introduce a lightweight post-processing pipeline that:
 
 This improves both safety and accuracy without retraining the model.
 
+## Version History
+- v0 (Colab Version):
+  - Implemented as a single notebook / script (safety_vlm_driving.py / Colab)
+  - Used Google Drive paths and Colab environment
+- v2 (Current Version):
+  - Fully modular Python project
+  - No Colab dependencies
+  - Clean structure and reproducible locally
+
 ## Key Features
 - No model retraining required  
 - Model-agnostic (works with any VLM)  
@@ -38,27 +47,37 @@ pip install -r requirements.txt
 
 ## Project Structure
 vlm-driving-safety/
-├── main.py              # Full evaluation pipeline  
-├── demo.py              # Qualitative demo (single sample)  
-├── inference.py         # Model loading + inference  
-├── safety_rules.py      # Rule-based safety logic  
-├── consistency.py       # Majority voting  
-├── utils.py             # Action normalization  
-├── metrics.py           # Evaluation + plots  
-├── data/DriveBench/     # Dataset (images only)  
-├── results/             # Output JSON + plots  
+├── main.py  
+├── demo.py  
+├── inference.py  
+├── safety_rules.py  
+├── consistency.py  
+├── utils.py  
+├── metrics.py  
+├── data/DriveBench/  
+├── results/  
 ├── requirements.txt  
 ├── README.md  
 
 ## Data Sources
 - Questions / metadata → HuggingFace  
-- Images → Local dataset folder  
+- Images → Google Drive download (see below)
 
 ## Dataset Setup
-Step 1: Dataset metadata is loaded automatically using:
+
+### Step 1: Dataset Metadata (Automatic)
+Loaded directly using:
 load_dataset("drive-bench/arena")
 
-Step 2: Download DriveBench images manually and place them in:
+### Step 2: Download Images
+Download dataset from Google Drive:
+
+**Dataset Link:**
+[PASTE YOUR GOOGLE DRIVE LINK HERE]
+
+### Step 3: Extract Dataset
+Place extracted folder in:
+
 data/DriveBench/Brightness/
 
 Expected structure:
@@ -70,11 +89,11 @@ data/DriveBench/Brightness/
 ├── CAM_BACK_LEFT/  
 ├── CAM_BACK_RIGHT/  
 
-Images are not included in the repository due to size constraints.
+Images are not included in this repository due to size limitations.
 
 ## How to Run
 
-Full Evaluation Pipeline:
+### Full Evaluation Pipeline
 python main.py
 
 This will:
@@ -86,6 +105,7 @@ This will:
 - save results
 
 ## Output Files
+
 Saved in:
 results/
 
@@ -95,12 +115,13 @@ Includes:
 - vlm_error_categorization.png → error analysis  
 
 ## Qualitative Demo
+
 Run:
 python demo.py
 
 This runs one sample and shows:
 - Question  
-- Qwen raw outputs (K=3)  
+- Qwen raw outputs  
 - Image description (context)  
 - Safety rules applied  
 - Final decision  
@@ -121,12 +142,11 @@ Image + Question
 - Consistency Score  
 
 ## Error Analysis
-Errors are categorized into:
 - Context Extraction Errors  
-- Rule Conflicts (false overrides)  
+- Rule Conflicts  
 - Ambiguous Scenes  
 
-Example output:
+Example:
 {
   "baseline_final": "accelerate",
   "safe_final": "keep speed",
@@ -140,9 +160,9 @@ Example output:
 - False override rate: 2.8%  
 
 ## Reproducibility
-To reproduce:
 - Install dependencies  
-- Place images in data/DriveBench/  
+- Download dataset from Google Drive  
+- Place in data/DriveBench/  
 - Run:
   python main.py  
   python demo.py  
@@ -150,8 +170,8 @@ To reproduce:
 ## Limitations
 - Depends on VLM context extraction quality  
 - Rule-based system is not fully scalable  
-- Single-frame only (no temporal reasoning)  
-- Dataset limited to ~400 samples  
+- Single-frame only  
+- Dataset limited (~400 samples)  
 
 ## Authors
 - Nadia Badawi  
