@@ -66,7 +66,7 @@ vlm-driving-safety/
 ## Dataset Setup
 
 ### Step 1: Dataset Metadata (Automatic)
-Loaded directly using:
+Loaded directly using:https://drive.google.com/file/d/1ZiHWqOkSZjXWYYzCKUrhPlgjv4eIJsph/view?usp=sharing
 load_dataset("drive-bench/arena")
 
 ### Step 2: Download Images
