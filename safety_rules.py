@@ -1,37 +1,25 @@
-# safety_rules.py
+# ============================================================
+# IMPORTS
+# ============================================================
 
-from typing import Tuple, List
+from utils import ACTION_SPACE, CONSERVATIVE_ORDER
 
-# ── Action Space ─────────────────────────────────────────────
-ACTION_SPACE = [
-    'keep speed',
-    'accelerate',
-    'brake gently',
-    'brake hard',
-    'stop',
-    'turn left',
-    'turn right',
-    'change lane left',
-    'change lane right',
-    'back up'
-]
 
-# ── Conservative Fallback Order (safest → least safe) ─────────
-CONSERVATIVE_ORDER = [
-    'keep speed',
-    'brake gently',
-    'brake hard',
-    'stop',
-    'change lane left',
-    'change lane right',
-    'turn left',
-    'turn right',
-    'accelerate',
-    'back up'
-]
+# ============================================================
+# CONTEXT PARSING
+# ============================================================
 
-# ── Context Parsing ──────────────────────────────────────────
-def parse_context(context_dict: dict) -> dict:
+def parse_context(context_dict):
+    """
+    Normalize context values into consistent format for rule checking.
+
+    Args:
+        context_dict (dict): raw context from model
+
+    Returns:
+        dict: normalized context
+    """
+
     def is_yes(val):
         return str(val).lower().strip().rstrip('.') in {'yes', 'true', '1'}
 
@@ -53,16 +41,36 @@ def parse_context(context_dict: dict) -> dict:
         'visibility_degraded': is_yes(context_dict.get('visibility_degraded', 'no')),
     }
 
-# ── Safety Rules ─────────────────────────────────────────────
-def apply_safety_rules(action: str, context_raw: dict) -> Tuple[str, List[str], bool]:
+
+# ============================================================
+# SAFETY RULES
+# ============================================================
+
+def apply_safety_rules(action, context_raw):
+    """
+    Apply hierarchical safety rules to predicted action.
+
+    Args:
+        action (str): predicted action
+        context_raw (dict): raw context from model
+
+    Returns:
+        tuple:
+            safe_action (str)
+            fired_rules (list)
+            was_overridden (bool)
+    """
+
     c = parse_context(context_raw)
     fired = []
-    feasible = set(ACTION_SPACE)
+
+    # Start with all possible actions except 'unknown'
+    feasible = set(ACTION_SPACE) - {'unknown'}
 
     # ── Tier 1: Mandatory Stop ────────────────────────────────
     if c['traffic_light'] == 'red' or c['stop_sign']:
         fired.append('R1')
-        feasible = feasible & {'stop', 'brake hard', 'brake gently'}
+        feasible &= {'stop', 'brake hard', 'brake gently'}
 
     if c['traffic_light'] == 'yellow':
         fired.append('R2_yellow')
@@ -72,10 +80,10 @@ def apply_safety_rules(action: str, context_raw: dict) -> Tuple[str, List[str], 
         fired.append('R3')
         feasible.discard('accelerate')
 
-    if c['crosswalk']:
-        fired.append('R3_crosswalk')
-        feasible.discard('change lane left')
-        feasible.discard('change lane right')
+        if c['crosswalk']:
+            fired.append('R3_crosswalk')
+            feasible.discard('change lane left')
+            feasible.discard('change lane right')
 
     if c['lane_blocked']:
         fired.append('R4')
@@ -106,20 +114,39 @@ def apply_safety_rules(action: str, context_raw: dict) -> Tuple[str, List[str], 
         feasible.discard('brake hard')
 
     # ── Decision Logic ────────────────────────────────────────
+
+    # Edge case: no feasible actions
     if not feasible:
         fallback = 'brake gently' if 'R7' in fired else 'stop'
         return fallback, fired, True
 
+    # If action is already safe
     if action in feasible:
         return action, fired, False
 
+    # Otherwise choose safest alternative
     for conservative_action in CONSERVATIVE_ORDER:
         if conservative_action in feasible:
             return conservative_action, fired, True
 
+    # Final fallback (should not happen)
     return list(feasible)[0], fired, True
 
-# ── Unsafe Check ─────────────────────────────────────────────
-def is_unsafe(action: str, context_raw: dict) -> bool:
-    safe_action, _, overridden = apply_safety_rules(action, context_raw)
+
+# ============================================================
+# UNSAFE CHECK
+# ============================================================
+
+def is_unsafe(action, context_raw):
+    """
+    Check if action violates safety rules.
+
+    Args:
+        action (str)
+        context_raw (dict)
+
+    Returns:
+        bool
+    """
+    _, _, overridden = apply_safety_rules(action, context_raw)
     return overridden

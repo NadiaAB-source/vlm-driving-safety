@@ -1,167 +1,243 @@
-# main.py
+# ============================================================
+# IMPORTS
+# ============================================================
 
+import os
+import re
 import json
 import random
-from tqdm import tqdm
-import os
+from collections import Counter
 
-from inference import run_qwen, parse_json_output, ACTION_SYSTEM_PROMPT, CONTEXT_USER_PROMPT
+import torch
+from PIL import Image
+from tqdm import tqdm
+from datasets import load_dataset
+
+from inference import (
+    load_model,
+    run_qwen,
+    parse_json_output,
+    ACTION_SYSTEM_PROMPT,
+    CONTEXT_SYSTEM_PROMPT,
+    CONTEXT_USER_PROMPT
+)
+
+from utils import normalize_action
 from safety_rules import apply_safety_rules, is_unsafe
 from consistency import consistency_vote
-from utils import normalize_action
-from metrics import compute_metrics, print_metrics
-
-# ── SETTINGS ───────────────────────────────────────────────
-K = 3
-NUM_SAMPLES = 50
-RESULTS_PATH = "./results/results.json"
-
-# 👉 MODE SWITCH
-MODE = "dummy"   # "dummy" or "full"
-
-# 👉 DATA PATH (for full mode)
-DATA_PATH = "./data/"
+from metrics import (
+    compute_metrics,
+    print_summary,
+    analyze_rule_firing,
+    print_rule_analysis,
+    plot_results,
+    error_analysis,
+    print_error_analysis
+)
 
 
-# ───────────────────────────────────────────────────────────
-# Dummy Mode
-# ───────────────────────────────────────────────────────────
-def load_dummy_data():
-    return [
-        {
-            "image_path": "sample.jpg",
-            "question": "What should the car do?",
-            "answer": "keep speed"
-        }
-        for _ in range(NUM_SAMPLES)
-    ]
+# ============================================================
+# DATASET SETUP (ZIP EXTRACTION)
+# ============================================================
 
+ZIP_PATH = "DriveBench.zip"
+EXTRACT_PATH = "data"
+DATASET_PATH = os.path.join(EXTRACT_PATH, "DriveBench")
 
-# ───────────────────────────────────────────────────────────
-# Full Mode (DriveBench-style loader)
-# ───────────────────────────────────────────────────────────
-def load_full_data():
-    """
-    Replace this with your actual DriveBench loader if needed.
-    Here we assume JSON format:
-    [
-      {"image_path": "...", "question": "...", "answer": "..."}
-    ]
-    """
+def setup_dataset():
+    if os.path.exists(DATASET_PATH):
+        print("✅ Dataset already extracted.")
+        return
 
-    dataset_file = os.path.join(DATA_PATH, "dataset.json")
-
-    if not os.path.exists(dataset_file):
-        raise FileNotFoundError("dataset.json not found in ./data/")
-
-    with open(dataset_file) as f:
-        data = json.load(f)
-
-    return data[:NUM_SAMPLES]
-
-
-# ───────────────────────────────────────────────────────────
-# MAIN PIPELINE
-# ───────────────────────────────────────────────────────────
-def main():
-
-    if MODE == "dummy":
-        dataset = load_dummy_data()
-        print("Running in DUMMY mode")
-
-    elif MODE == "full":
-        dataset = load_full_data()
-        print("Running in FULL dataset mode")
-
+    if os.path.exists(ZIP_PATH):
+        print("📦 Extracting dataset...")
+        import zipfile
+        with zipfile.ZipFile(ZIP_PATH, 'r') as zip_ref:
+            zip_ref.extractall(EXTRACT_PATH)
+        print("✅ Extraction complete!")
     else:
-        raise ValueError("MODE must be 'dummy' or 'full'")
+        raise FileNotFoundError("❌ DriveBench.zip not found.")
 
-    results = []
 
-    for sample in tqdm(dataset, desc="Running pipeline"):
+setup_dataset()
+BASE_PATH = os.path.join(DATASET_PATH, "Brightness")
 
-        image_path = sample["image_path"]
-        question = sample["question"]
-        gt_text = sample["answer"]
 
-        gt_action = normalize_action(gt_text)
+# ============================================================
+# LOAD DATASET (HuggingFace)
+# ============================================================
 
-        # ── Context Extraction ─────────────────────────────
+def load_drivebench():
+    print("📥 Loading dataset...")
+    ds = load_dataset("drive-bench/arena")
+    ds_test = ds["test"]
+    print(f"Total samples: {len(ds_test)}")
+    return ds_test
+
+ds_test = load_drivebench()
+
+
+# ============================================================
+# CAMERA EXTRACTION
+# ============================================================
+
+def get_camera(question):
+    match = re.search(
+        r'(CAM_FRONT_LEFT|CAM_FRONT_RIGHT|CAM_BACK_LEFT|CAM_BACK_RIGHT|CAM_FRONT|CAM_BACK)',
+        question
+    )
+    return match.group(1) if match else 'CAM_FRONT'
+
+
+# ============================================================
+# FILTER DATA
+# ============================================================
+
+planning_samples = [
+    s for s in ds_test
+    if s['question_type'] == 'planning'
+    and 'lead to a collision' not in s['question'].lower()
+]
+
+print(f"Planning samples: {len(planning_samples)}")
+
+
+valid_samples = []
+missing = 0
+
+for s in planning_samples:
+    cam = get_camera(s['question'])
+    filename = os.path.basename(s['image_path'][cam])
+    img_path = os.path.join(BASE_PATH, cam, filename)
+
+    if os.path.exists(img_path):
+        s_copy = dict(s)
+        s_copy['resolved_camera'] = cam
+        s_copy['resolved_image_path'] = img_path
+        valid_samples.append(s_copy)
+    else:
+        missing += 1
+
+print(f"Valid samples: {len(valid_samples)}")
+print(f"Missing images: {missing}")
+
+
+# ============================================================
+# LOAD MODEL
+# ============================================================
+
+model, processor = load_model()
+
+
+# ============================================================
+# MAIN LOOP
+# ============================================================
+
+K = 3
+NUM_SAMPLES = 400
+SAVE_PATH = "results/vlm_results.json"
+
+os.makedirs("results", exist_ok=True)
+
+random.seed(42)
+eval_samples = random.sample(valid_samples, min(NUM_SAMPLES, len(valid_samples)))
+
+results = []
+
+for i, sample in enumerate(tqdm(eval_samples, desc="Evaluating")):
+
+    img_path = sample['resolved_image_path']
+    question = sample['question']
+    gt_action = normalize_action(sample['answer'])
+
+    # Context extraction
+    try:
         ctx_raw = run_qwen(
-            image_path,
-            CONTEXT_USER_PROMPT,
+            model, processor,
+            img_path,
+            CONTEXT_SYSTEM_PROMPT,
             CONTEXT_USER_PROMPT,
             temperature=0.0
         )
+        context = parse_json_output(ctx_raw)
+        context_ok = 'parse_error' not in context
+    except:
+        context = {}
+        context_ok = False
 
-        context_dict = parse_json_output(ctx_raw)
-        context_ok = 'parse_error' not in context_dict
+    baseline_actions = []
+    safe_actions = []
+    fired_all = []
+    overrides = []
 
-        # ── Action Inference ───────────────────────────────
-        baseline_actions = []
-        safe_actions = []
-        overrides = []
-
-        for _ in range(K):
-
+    # Action inference
+    for _ in range(K):
+        try:
             raw = run_qwen(
-                image_path,
+                model, processor,
+                img_path,
                 ACTION_SYSTEM_PROMPT,
                 question,
                 temperature=0.7
             )
-
             parsed = parse_json_output(raw)
-            action_text = parsed.get("action", "unknown")
+            action = normalize_action(parsed.get("action", "unknown"))
+        except:
+            action = "unknown"
 
-            baseline_action = normalize_action(action_text)
+        if context_ok and action != "unknown":
+            safe_action, fired, overridden = apply_safety_rules(action, context)
+        else:
+            safe_action, fired, overridden = action, [], False
 
-            if context_ok and baseline_action != "unknown":
-                safe_action, _, overridden = apply_safety_rules(baseline_action, context_dict)
-            else:
-                safe_action = baseline_action
-                overridden = False
+        baseline_actions.append(action)
+        safe_actions.append(safe_action)
+        fired_all.extend(fired)
+        overrides.append(overridden)
 
-            baseline_actions.append(baseline_action)
-            safe_actions.append(safe_action)
-            overrides.append(overridden)
+    # Voting
+    baseline_final, baseline_consistent = consistency_vote(baseline_actions)
+    safe_final, safe_consistent = consistency_vote(safe_actions)
 
-        # ── Consistency ────────────────────────────────────
-        baseline_final, baseline_consistent = consistency_vote(baseline_actions)
-        safe_final, safe_consistent = consistency_vote(safe_actions)
+    # Safety + accuracy
+    baseline_unsafe = is_unsafe(baseline_final, context) if context_ok else False
+    safe_unsafe = is_unsafe(safe_final, context) if context_ok else False
 
-        # ── Safety + Accuracy ──────────────────────────────
-        baseline_unsafe = is_unsafe(baseline_final, context_dict) if context_ok else False
-        safe_unsafe = is_unsafe(safe_final, context_dict) if context_ok else False
+    results.append({
+        "sample_id": i + 1,
+        "question": question,
+        "baseline_final": baseline_final,
+        "safe_final": safe_final,
+        "baseline_correct": baseline_final == gt_action,
+        "safe_correct": safe_final == gt_action,
+        "baseline_unsafe": baseline_unsafe,
+        "safe_unsafe": safe_unsafe,
+        "baseline_consistent": baseline_consistent,
+        "safe_consistent": safe_consistent,
+        "any_override": any(overrides),
+        "fired_rules": list(set(fired_all)),
+        "context": context,
+        "context_ok": context_ok
+    })
 
-        baseline_correct = (baseline_final == gt_action)
-        safe_correct = (safe_final == gt_action)
+# Save
+with open(SAVE_PATH, "w") as f:
+    json.dump(results, f, indent=2)
 
-        # ── Store ──────────────────────────────────────────
-        results.append({
-            "baseline_final": baseline_final,
-            "safe_final": safe_final,
-            "baseline_correct": baseline_correct,
-            "safe_correct": safe_correct,
-            "baseline_unsafe": baseline_unsafe,
-            "safe_unsafe": safe_unsafe,
-            "baseline_consistent": baseline_consistent,
-            "safe_consistent": safe_consistent,
-            "any_override": any(overrides),
-            "context_ok": context_ok,
-            "ground_truth_action": gt_action
-        })
-
-    # ── Save ───────────────────────────────────────────────
-    with open(RESULTS_PATH, "w") as f:
-        json.dump(results, f, indent=2)
-
-    print(f"\nResults saved to {RESULTS_PATH}")
-
-    # ── Metrics ────────────────────────────────────────────
-    metrics = compute_metrics(results)
-    print_metrics(metrics)
+print("✅ Results saved.")
 
 
-if __name__ == "__main__":
-    main()
+# ============================================================
+# METRICS
+# ============================================================
+
+metrics = compute_metrics(results)
+print_summary(metrics)
+
+rule_counts = analyze_rule_firing(results)
+print_rule_analysis(rule_counts, len(results))
+
+plot_results(metrics)
+
+stats = error_analysis(results)
+print_error_analysis(stats)

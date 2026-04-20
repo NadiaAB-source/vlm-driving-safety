@@ -2,10 +2,10 @@ transformers==4.46.3
 accelerate
 safetensors
 qwen-vl-utils
-torch
 Pillow
 requests
 tqdm
 datasets
+torch
 matplotlib
 numpy
