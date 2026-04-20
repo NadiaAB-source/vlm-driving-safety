@@ -1,6 +1,6 @@
 # Safety-Aware Post-Processing for Reliable VLM Driving Decisions
 
-## 📌 Project Overview
+##  Project Overview
 
 This project presents a **safety-aware post-processing framework** that improves the reliability of Vision–Language Models (VLMs) for autonomous driving decision-making.
 
@@ -17,7 +17,7 @@ This improves both **safety and accuracy** without retraining the model.
 
 ---
 
-## 🚀 Key Features
+##  Key Features
 
 - No model retraining required  
 - Model-agnostic (works with any VLM)  
@@ -28,7 +28,7 @@ This improves both **safety and accuracy** without retraining the model.
 
 ---
 
-## 🖥️ Hardware Requirements
+##  Hardware Requirements
 
 - GPU recommended: NVIDIA A100 / RTX 3090 (≥16GB VRAM)
 - Minimum: GPU with ≥12GB VRAM
@@ -36,7 +36,7 @@ This improves both **safety and accuracy** without retraining the model.
 
 ---
 
-## 💻 Software Requirements
+##  Software Requirements
 
 - Python 3.10+
 - PyTorch
@@ -66,10 +66,10 @@ vlm-driving-safety/
 ├── README.md
 
 
-📊 Data Sources
+** Data Sources**
 Questions / metadata → HuggingFace
 Images → Local dataset folder
-📥 Dataset Setup
+** Dataset Setup**
 Step 1: Download Dataset Metadata (Automatic)
 
 The code loads the dataset from HuggingFace:
@@ -97,8 +97,8 @@ data/DriveBench/Brightness/
 
 Images are not included in the repository due to size constraints.
 
-▶️ How to Run
-1️⃣ Full Evaluation Pipeline
+** How to Run
+ Full Evaluation Pipeline**
 python main.py
 
 This will:
@@ -109,7 +109,7 @@ apply safety rules
 compute metrics
 generate plots
 save results
-📁 Output Files
+** Output Files**
 
 Saved in:
 
@@ -120,7 +120,7 @@ Includes:
 vlm_results.json → full results
 vlm_results_chart.png → metrics plot
 vlm_error_categorization.png → error analysis
-2️⃣ Qualitative Demo (Professor Requirement)
+**Qualitative Demo **
 
 Run:
 
@@ -146,12 +146,12 @@ Safety Rules Layer
 Consistency Voting
         ↓
 Final Safe Decision
-📈 Evaluation Metrics
+**Evaluation Metrics**
 Decision Accuracy
 Unsafe Decision Rate
 False Override Rate
 Consistency Score
-🔍 Error Analysis
+** Error Analysis**
 
 Errors are categorized into:
 
@@ -167,14 +167,14 @@ Example output (from results file):
   "any_override": true,
   "fired_rules": ["R8"]
 }
-📊 Sample Result
+** Sample Result**
 
 From vlm_results.json:
 
 Unsafe Rate reduced: 30.5% → 1.5%
 Accuracy improved: 43.3% → 57.9%
 False override rate: 2.8%
-🧪 Reproducibility
+** Reproducibility**
 
 To fully reproduce:
 
@@ -183,14 +183,14 @@ Download images into data/DriveBench/
 Run:
 python main.py
 python demo.py
-⚠️ Limitations
+** Limitations**
 Depends on VLM context extraction quality
 Rule-based system (not fully scalable)
 Single-frame (no temporal reasoning)
 Dataset limited to ~400 samples
-👩‍💻 Authors
+** Authors**
 Nadia Badawi
-Kisaa Fatima Muhammad
 Sema Helali
+Kisaa Fatima Muhammad
 Hailemariam Teshager
 
