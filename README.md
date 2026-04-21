@@ -23,6 +23,23 @@ This improves both safety and accuracy without retraining the model.
   - No Colab dependencies
   - Clean structure and reproducible locally
 
+
+
+### Build
+No compilation is required. The project runs directly using Python scripts.
+## Sample Input and Output
+
+Sample Input:
+- Image from DriveBench dataset
+- Question: "What should the vehicle do?"
+
+Sample Output:
+{
+  "baseline_final": "accelerate",
+  "safe_final": "keep speed",
+  "any_override": true,
+  "fired_rules": ["R8"]
+}
 ## Key Features
 - No model retraining required  
 - Model-agnostic (works with any VLM)  
@@ -58,7 +75,11 @@ vlm-driving-safety/
 ├── results/  
 ├── requirements.txt  
 ├── README.md  
-
+Each module handles a specific part of the pipeline:
+- inference.py → model and prompts
+- safety_rules.py → rule-based filtering
+- consistency.py → majority voting
+- metrics.py → evaluation and plots
 ## Data Sources
 - Questions / metadata → HuggingFace  
 - Images → Google Drive download (see below)
@@ -66,14 +87,14 @@ vlm-driving-safety/
 ## Dataset Setup
 
 ### Step 1: Dataset Metadata (Automatic)
-Loaded directly using:https://drive.google.com/file/d/1ZiHWqOkSZjXWYYzCKUrhPlgjv4eIJsph/view?usp=sharing
+Loaded directly using: ....
 load_dataset("drive-bench/arena")
 
 ### Step 2: Download Images
 Download dataset from Google Drive:
 
 **Dataset Link:**
-[PASTE YOUR GOOGLE DRIVE LINK HERE]
+(https://drive.google.com/file/d/1ZiHWqOkSZjXWYYzCKUrhPlgjv4eIJsph/view?usp=sharing)
 
 ### Step 3: Extract Dataset
 Place extracted folder in:
@@ -91,6 +112,12 @@ data/DriveBench/Brightness/
 
 Images are not included in this repository due to size limitations.
 
+### Preprocessing
+
+- Filter only planning questions
+- Remove collision-related questions
+- Extract camera from question
+- Match image files with dataset metadata
 ## How to Run
 
 ### Full Evaluation Pipeline
@@ -162,7 +189,7 @@ Example:
 ## Reproducibility
 - Install dependencies  
 - Download dataset from Google Drive  
-- Place in data/DriveBench/  
+- Place dataset in: data/DriveBench/Brightness/
 - Run:
   python main.py  
   python demo.py  
