@@ -59,8 +59,31 @@ Sample Output:
 - HuggingFace Transformers
 - datasets
 
-Install dependencies:
+## Environment Setup (Recommended)
+
+To avoid dependency conflicts, it is recommended to create a virtual environment before installing the requirements.
+
+### Create virtual environment
+```bash
+python -m venv cars
+```
+
+### Activate environment
+
+**Windows:**
+```bash
+cars\Scripts\activate
+```
+
+**Linux / Mac:**
+```bash
+source cars/bin/activate
+```
+
+### Install dependencies
+```bash
 pip install -r requirements.txt
+```
 
 ## Project Structure
 vlm-driving-safety/
@@ -174,7 +197,45 @@ This runs one sample and shows:
 - Image description (context)  
 - Safety rules applied  
 - Final decision  
-- Summary  
+- Summary
+
+## Original Colab Version (v0)
+
+The first version of this project was implemented as a single Google Colab notebook:
+
+- File: `safety_vlm_driving.ipynb`
+
+This version includes:
+- Full pipeline implementation in one script  
+- Google Drive integration for dataset loading  
+- Inline evaluation, visualization, and analysis  
+
+The current repository (v2) refactors this into a clean modular Python project.
+
+---
+
+## JSON Output Explanation
+
+Each sample produces a structured JSON output containing both baseline and safety-refined decisions.
+
+### Example
+```json
+{
+  "baseline_final": "accelerate",
+  "safe_final": "keep speed",
+  "any_override": true,
+  "fired_rules": ["R8"]
+}
+```
+
+### Explanation
+
+- **baseline_final** → The original action predicted by the VLM  
+- **safe_final** → The final action after applying safety rules  
+- **any_override** → Indicates whether the safety layer changed the original decision  
+- **fired_rules** → List of safety rules that were triggered (e.g., R8 = degraded visibility)  
+
+This structure ensures full transparency and explainability of the system decisions.
 
 ## Pipeline Overview
 Image + Question  
