@@ -265,6 +265,87 @@ Example:
   "fired_rules": ["R8"]
 }
 
+
+## Sample Input / Output (Qualitative Examples)
+
+Below are examples showing how the safety layer improves VLM decisions.
+
+### Example 1 – Safety Correction
+
+![Qualitative Example 1](images/sample1.png)
+
+- **Qwen Raw:** accelerate ❌  
+- **After Safety:** keep speed ✅  
+- **Rule Applied:** R8 (degraded visibility)
+
+---
+
+### Example 2 – False Override Case
+
+![Qualitative Example 2](images/sample2.png)
+
+- **Qwen Raw:** keep speed ✅  
+- **After Safety:** brake gently ❌  
+- **Rules Applied:** R8, R1, R7  
+
+This demonstrates a rare **false override case**.
+
+---
+
+## Demo Run (Single Sample)
+
+Below is an example output when running:
+
+```bash
+python demo.py
+```
+
+![Demo Output](images/demo_output.png)
+
+### Key Observations
+- Model produces **consistent raw outputs (K=3)**
+- Context is extracted in structured format
+- Safety rules refine unsafe actions
+- Final decision is selected via consistency voting
+
+---
+
+## Full Pipeline Run (Evaluation Output)
+
+Below is a snapshot of the full evaluation pipeline:
+
+```bash
+python main.py
+```
+
+![Full Results](images/full_results.png)
+
+### Results Summary
+- **Unsafe Decision Rate:** reduced significantly  
+- **Accuracy:** improved after safety layer  
+- **Consistency:** maintained at 100%  
+- **Rule activations:** provide explainability  
+
+---
+
+## Error Analysis Example
+
+![Error Analysis](images/error_analysis.png)
+
+### Observations
+- Very low context extraction errors  
+- Small number of rule conflicts (~2–10%)  
+- Most decisions are correctly refined  
+
+---
+
+## Notes
+
+- Images are stored in the `images/` folder inside the repository  
+- File names can be adjusted as needed  
+- These visualizations demonstrate the effectiveness of the safety layer  
+
+
 ## Sample Results
 - Unsafe Rate reduced: 30.5% → 1.5%  
 - Accuracy improved: 43.3% → 57.9%  
