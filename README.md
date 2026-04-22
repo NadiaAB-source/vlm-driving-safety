@@ -219,6 +219,40 @@ The current repository (v2) refactors this into a clean modular Python project.
 
 Each sample produces a structured JSON output containing both baseline and safety-refined decisions.
 
+## Qualitative Examples
+
+<p align="center">
+  <img src="images/samples.png" width="700"/>
+</p>
+<p align="center"><em>Figure: Safety override examples demonstrating correction of unsafe VLM decisions.</em></p>
+
+---
+
+## Demo Run Output
+
+<p align="center">
+  <img src="images/demo_output.png" width="700"/>
+</p>
+<p align="center"><em>Figure: Output of running the demo script (python demo.py) showing raw actions, context extraction, and final decision.</em></p>
+
+---
+
+## Final Demo Summary
+
+<p align="center">
+  <img src="images/demofinal.png" width="700"/>
+</p>
+<p align="center"><em>Figure: Final summarized decision and consistency after applying safety rules.</em></p>
+
+---
+
+## Full Evaluation Results
+
+<p align="center">
+  <img src="images/full_results.png" width="700"/>
+</p>
+<p align="center"><em>Figure: Full pipeline results including accuracy, unsafe rate reduction, and rule activation statistics.</em></p>
+
 ### Example
 ```json
 {
@@ -266,32 +300,39 @@ Example:
 }
 
 
-## Sample Input / Output (Qualitative Examples)
+## Qualitative Examples
 
-Below are examples showing how the safety layer improves VLM decisions.
-
-### Example 1 – Safety Correction
-
-![Qualitative Example 1](images/sample1.png)
-
-- **Qwen Raw:** accelerate ❌  
-- **After Safety:** keep speed ✅  
-- **Rule Applied:** R8 (degraded visibility)
+<p align="center">
+  <img src="images/samples.png" width="700"/>
+</p>
+<p align="center"><em>Figure: Safety override examples demonstrating correction of unsafe VLM decisions.</em></p>
 
 ---
 
-### Example 2 – False Override Case
+## Demo Run Output
 
-![Qualitative Example 2](images/sample2.png)
-
-- **Qwen Raw:** keep speed ✅  
-- **After Safety:** brake gently ❌  
-- **Rules Applied:** R8, R1, R7  
-
-This demonstrates a rare **false override case**.
+<p align="center">
+  <img src="images/demo_output.png" width="700"/>
+</p>
+<p align="center"><em>Figure: Output of running the demo script (python demo.py) showing raw actions, context extraction, and final decision.</em></p>
 
 ---
 
+## Final Demo Summary
+
+<p align="center">
+  <img src="images/demofinal.png" width="700"/>
+</p>
+<p align="center"><em>Figure: Final summarized decision and consistency after applying safety rules.</em></p>
+
+---
+
+## Full Evaluation Results
+
+<p align="center">
+  <img src="images/full_results.png" width="700"/>
+</p>
+<p align="center"><em>Figure: Full pipeline results including accuracy, unsafe rate reduction, and rule activation statistics.</em></p>
 ## Demo Run (Single Sample)
 
 Below is an example output when running:
