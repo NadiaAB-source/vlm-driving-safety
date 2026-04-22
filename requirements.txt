@@ -6,7 +6,6 @@ Pillow
 requests
 tqdm
 datasets
-torch
 matplotlib
 numpy
 torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
