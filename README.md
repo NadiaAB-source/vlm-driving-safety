@@ -86,31 +86,53 @@ Each module handles a specific part of the pipeline:
 
 ## Dataset Setup
 
+Due to size limitations, images are NOT included in this repository.
+
 ### Step 1: Dataset Metadata (Automatic)
-Loaded directly using: ....
-load_dataset("drive-bench/arena")
 
-### Step 2: Download Images
-Download dataset from Google Drive:
+The metadata (questions and annotations) is loaded automatically from HuggingFace:
 
-**Dataset Link:**
-(https://drive.google.com/file/d/1ZiHWqOkSZjXWYYzCKUrhPlgjv4eIJsph/view?usp=sharing)
+```python
+from datasets import load_dataset
+dataset = load_dataset("drive-bench/arena")
+```
 
-### Step 3: Extract Dataset
-Place extracted folder in:
+---
 
+### Step 2: Download Images (Required)
+
+Download the image dataset manually from Google Drive:
+
+https://drive.google.com/file/d/1ZiHWqOkSZjXWYYzCKUrhPlgjv4eIJsph/view
+
+---
+
+### Step 3: Extract and Place Dataset
+
+After downloading, extract the zip file and place it in the following directory:
+
+```
 data/DriveBench/Brightness/
+```
 
-Expected structure:
+Final structure must look like:
+
+```
 data/DriveBench/Brightness/
-├── CAM_FRONT/  
-├── CAM_BACK/  
-├── CAM_FRONT_LEFT/  
-├── CAM_FRONT_RIGHT/  
-├── CAM_BACK_LEFT/  
-├── CAM_BACK_RIGHT/  
+├── CAM_FRONT/
+├── CAM_BACK/
+├── CAM_FRONT_LEFT/
+├── CAM_FRONT_RIGHT/
+├── CAM_BACK_LEFT/
+├── CAM_BACK_RIGHT/
+```
 
-Images are not included in this repository due to size limitations.
+ Important:
+
+* Do NOT keep the zip file compressed
+* Make sure image paths match exactly
+* Incorrect structure will result in "unknown" outputs during inference
+
 
 ### Preprocessing
 
