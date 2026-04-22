@@ -92,7 +92,8 @@ def run_qwen(model, processor, image_path, system_prompt, user_text,
         str: raw model output
     """
 
-    image_uri = "file://" + os.path.abspath(image_path)
+    # ✅ FIXED LINE (ONLY CHANGE)
+    image_uri = os.path.abspath(image_path)
 
     messages = [
         {"role": "system", "content": system_prompt},
