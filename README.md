@@ -343,7 +343,7 @@ python main.py
 
 ## Error Analysis Example
 
-![Error Analysis](images/error_analysis.png)
+![Error Analysis](images/error.png)
 
 ### Observations
 - Very low context extraction errors  
