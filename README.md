@@ -300,40 +300,12 @@ Example:
 }
 
 
-## Qualitative Examples
 
-<p align="center">
-  <img src="images/samples.png" width="700"/>
-</p>
-<p align="center"><em>Figure: Safety override examples demonstrating correction of unsafe VLM decisions.</em></p>
 
----
 
-## Demo Run Output
 
-<p align="center">
-  <img src="images/demo_output.png" width="700"/>
-</p>
-<p align="center"><em>Figure: Output of running the demo script (python demo.py) showing raw actions, context extraction, and final decision.</em></p>
 
----
 
-## Final Demo Summary
-
-<p align="center">
-  <img src="images/demofinal.png" width="700"/>
-</p>
-<p align="center"><em>Figure: Final summarized decision and consistency after applying safety rules.</em></p>
-
----
-
-## Full Evaluation Results
-
-<p align="center">
-  <img src="images/full_results.png" width="700"/>
-</p>
-<p align="center"><em>Figure: Full pipeline results including accuracy, unsafe rate reduction, and rule activation statistics.</em></p>
-## Demo Run (Single Sample)
 
 Below is an example output when running:
 
